@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRX // Contas de Players</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.account-wrap{width:min(94vw,900px);margin:40px auto}.account-box{border:1px solid #39ff88;background:#07110b;padding:24px;box-shadow:0 0 20px #0f4}.account-box h1{color:#39ff88}.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.account-grid label{display:flex;flex-direction:column;gap:6px;color:#8affb5}.account-grid input,.account-grid select{background:#020603;color:#d7ffe5;border:1px solid #247044;padding:12px;border-radius:4px}.account-box button{margin-top:18px;background:#0b2414;color:#39ff88;border:1px solid #39ff88;padding:12px 18px;cursor:pointer}.account-box button:disabled{opacity:.5;cursor:not-allowed}#msg{margin-top:14px;white-space:pre-wrap}.note{color:#8ba894;font-size:13px;line-height:1.5}.back{display:inline-block;margin-bottom:18px;color:#39ff88}@media(max-width:650px){.account-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="account-wrap">
+  <a class="back" href="index.html">← VOLTAR AO BANCO</a>
+  <div class="account-box">
+    <h1>👤 CRX // CRIAR CONTA DE PLAYER</h1>
+    <p class="note">Área exclusiva do Mestre. Crie uma conta para um novo jogador. A conta será criada pelo Supabase Auth e o perfil será criado automaticamente pelo gatilho do banco.</p>
+    <form id="accountForm">
+      <div class="account-grid">
+        <label>Nome do jogador<input id="displayName" required placeholder="Ex.: João"></label>
+        <label>Login / e-mail<input id="email" type="email" required placeholder="Ex.: joao@rpg.local"></label>
+        <label>Senha inicial<input id="password" type="password" minlength="6" required></label>
+        <label>Ficha / personagem<input id="character" placeholder="Ex.: Erebus"></label>
+      </div>
+      <button id="createBtn" type="submit">CRIAR CONTA</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+</div>
+<script>
+const cfg = window.CRX_CONFIG || {};
+const ready = cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("COLE_AQUI") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("COLE_AQUI");
+const sb = ready && window.supabase ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
+const msg = document.getElementById("msg");
+const btn = document.getElementById("createBtn");
+const form = document.getElementById("accountForm");
+
+async function init(){
+  if(!sb){ msg.textContent = "ERRO // config.js não está configurado."; btn.disabled = true; return; }
+  const {data,error} = await sb.auth.getSession();
+  if(error || !data.session){ location.href = "login.html"; return; }
+  const {data:profile,error:profileError} = await sb.from("profiles").select("role,username").eq("id",data.session.user.id).single();
+  if(profileError || profile?.role !== "master"){
+    msg.textContent = "ACESSO NEGADO // somente o Mestre pode criar contas.";
+    btn.disabled = true;
+    return;
+  }
+  msg.textContent = "MESTRE AUTENTICADO // pronto para criar contas.";
+}
+
+async function createPlayerAccount(e){
+  e.preventDefault();
+  if(!sb) return;
+  btn.disabled = true;
+  msg.textContent = "CRIANDO CONTA...";
+
+  const displayName = document.getElementById("displayName").value.trim();
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const password = document.getElementById("password").value;
+  const character = document.getElementById("character").value.trim();
+
+  const {data:sessionData,error:sessionError} = await sb.auth.getSession();
+  if(sessionError || !sessionData.session){ msg.textContent = "ACESSO NEGADO // sessão do Mestre não encontrada."; btn.disabled=false; return; }
+
+  // Cliente separado: a criação do novo usuário não substitui a sessão do Mestre.
+  const creator = window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const {data,error} = await creator.auth.signUp({
+    email,
+    password,
+    options:{data:{role:"player",display_name:displayName,character}}
+  });
+
+  if(error){ msg.textContent = "ERRO AO CRIAR CONTA:\n" + error.message; btn.disabled=false; return; }
+
+  msg.textContent = "CONTA CRIADA COM SUCESSO.\n\nJogador: " + displayName + "\nLogin: " + email + "\nFicha: " + (character || "não vinculada") + "\n\nO perfil do jogador é criado automaticamente pelo banco. Se a confirmação de e-mail estiver ativa no Supabase, ele deverá confirmar o e-mail antes do primeiro acesso.";
+  form.reset();
+  btn.disabled = false;
+}
+
+form.addEventListener("submit",createPlayerAccount);
+init();
+</script>
+</body>
+</html>
