@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRX // Banco de Criaturas</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<div class="scanlines"></div>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">◈</span><div><strong>CRX // BANCO DE CRIATURAS</strong><small id="accessLabel">ARQUIVO BIOLÓGICO</small></div></div>
+  <div class="status"><span class="dot"></span> <span id="systemStatus">CONECTANDO</span> <span id="userBadge" class="user-badge"></span><button id="logoutBtn" class="btn small">SAIR</button></div>
+</header>
+<main class="layout">
+<aside class="sidebar">
+  <div class="side-title">NAVEGAÇÃO</div>
+  <button class="nav active" data-section="catalog">▣ CATÁLOGO</button>
+  <button class="nav" data-section="players">◉ ESPÉCIES DOS PLAYERS</button>
+  <button class="nav master-only" data-section="seasonal">◆ ARQUIVOS SAZONAIS</button>
+  <button class="nav master-only" data-section="manage">⚙ GERENCIAR CRIATURAS</button>
+  <div class="side-box"><span>CLASSIFICAÇÃO</span>
+    <button class="filter active" data-filter="all">Todas</button><button class="filter" data-filter="pequeno">Pequenas</button><button class="filter" data-filter="medio">Médias</button><button class="filter" data-filter="grande">Grandes</button><button class="filter" data-filter="colossal">Colossais</button>
+  </div>
+  <div class="side-box"><span>PROTOCOLO</span><small>Defesa = 10 + Agilidade</small><small>Dano físico = Porte + atributo</small><small>10 pts iniciais de atributos</small><small>8 pts iniciais de perícias</small><small>A cada nível: +1 atributo OU +2 perícias</small></div>
+</aside>
+<section class="content">
+  <div class="page-head"><div><p class="eyebrow" id="sectionEyebrow">DATABASE / WILDLIFE</p><h1 id="sectionTitle">CATÁLOGO DE ESPÉCIES</h1><p class="muted" id="sectionSubtitle">Registros armazenados no banco de dados da campanha.</p></div><div class="counter"><span id="count">0</span> REGISTROS</div></div>
+  <div class="toolbar" id="catalogToolbar"><input id="search" type="search" placeholder="Pesquisar espécie, habitat ou tipo..."><select id="sort"><option value="name">Ordenar: nome</option><option value="level">Ordenar: nível</option><option value="hp">Ordenar: HP</option></select></div>
+  <div id="contentGrid" class="creature-grid"></div>
+  <footer>CRX // DATABASE • campanha • acesso controlado</footer>
+</section>
+</main>
+<div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="close">×</button><div id="modalContent"></div></div></div>
+<script src="app.js"></script>
+<a href="contas.html" class="admin-account-link">👤 GERENCIAR CONTAS DE PLAYERS</a>
+</body></html>

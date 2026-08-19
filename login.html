@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRX // Acesso</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="login-body">
+<div class="scanlines"></div>
+<main class="login-shell">
+  <section class="login-card">
+    <div class="brand large"><span class="brand-mark">◈</span><div><strong>CRX // BANCO DE CRIATURAS</strong><small>SISTEMA DE ARQUIVO BIOLÓGICO</small></div></div>
+    <p class="eyebrow">AUTHENTICATION // RESTRICTED</p>
+    <h1>ACESSO AO SISTEMA</h1>
+    <p class="muted">Identifique-se para acessar os registros autorizados.</p>
+    <form id="loginForm">
+      <label>USUÁRIO<input id="username" autocomplete="username" required placeholder="rpg123"></label>
+      <label>SENHA<input id="password" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
+      <button class="btn primary" type="submit">ENTRAR NO SISTEMA</button>
+    </form>
+    <p id="loginMsg" class="message"></p>
+    <div class="login-foot">CRX // acesso autenticado • jogadores e mestre possuem permissões diferentes</div>
+  </section>
+</main>
+<script>
+const cfg=window.CRX_CONFIG||{};
+const ready=cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("COLE_AQUI") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("COLE_AQUI");
+const sb=ready?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
+const form=document.getElementById("loginForm"), msg=document.getElementById("loginMsg");
+form.addEventListener("submit",async e=>{
+ e.preventDefault(); msg.textContent="";
+ if(!sb){msg.textContent="Configure primeiro o config.js com a URL e a chave anon do Supabase.";return;}
+ const u=document.getElementById("username").value.trim().toLowerCase();
+ const p=document.getElementById("password").value;
+ if(!/^[a-z0-9._-]{3,32}$/.test(u)){msg.textContent="Usuário inválido.";return;}
+ const {error}=await sb.auth.signInWithPassword({email:u+"@rpg.local",password:p});
+ if(error){msg.textContent="Acesso negado: usuário ou senha incorretos.";return;}
+ location.href="index.html";
+});
+</script>
+</body>
+</html>
